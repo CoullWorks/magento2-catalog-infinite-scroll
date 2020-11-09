@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~   @package    BoxLeaf
+  ~   @author     Daniel Coull <ttechitsolutions@gmail.com>
+  ~   @copyright  01/01/2020, 16:45.$year Daniel Coull
+  ~   @version    CVS: $Id:$
+  ~  @since      File available since Release 1.0.0
+  ~
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="boxleaf" translate="label" sortOrder="10">
+            <label>BoxLeaf</label>
+        </tab>
+        <section id="infinatescroll" translate="label" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
+            <class>separator-top</class>
+            <label>Infinate Scroll</label>
+            <tab>boxleaf</tab>
+            <resource>Magento_Catalog::catalog</resource>
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>General Configuration</label>
+                <field id="enable" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Infinite Scroll</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="load_on_scroll" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Load On Scroll</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="analytics_tracking" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Track Pages With analytics</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="next_button_class" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Next Button Class</label>
+                    <comment>The CSS Selector for the pagination next button</comment>
+                </field>
+                <field id="product_container_class" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Product Container Class</label>
+                    <comment>Container</comment>
+                </field>
+                <field id="hide_navigation" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Hide Navigation</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="navigation_class" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Navigation Class</label>
+                    <comment>The CSS Selector for the pagination next button</comment>
+                    <depends>
+                        <field id="hide_navigation">1</field>
+                    </depends>
+                </field>
+                <field id="show_end_status" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show End Status Block</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="end_status_text" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>End Status Text</label>
+                    <comment>Text to show at the bottom after the last item. </comment>
+                    <depends>
+                        <field id="show_end_status">1</field>
+                    </depends>
+                </field>
+                <field id="debug" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Debug</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="display_type" translate="label" type="select"
+                       sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Display Type</label>
+                    <source_model>BoxLeaf\InfinateScroll\Model\Config\Source\DisplayType</source_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

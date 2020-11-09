@@ -1,0 +1,30 @@
+<script id="scroll-status" type="text/x-magento-template">
+    <div class="grid__col-sizer"></div>
+    <div class="grid__gutter-sizer"></div>
+
+    <div class="page-load-status">
+        <div class="infinite-scroll-request">
+            <div class="loader-ellips">
+                <span class="loader-ellips__dot"></span>
+                <span class="loader-ellips__dot"></span>
+                <span class="loader-ellips__dot"></span>
+                <span class="loader-ellips__dot"></span>
+            </div>
+        </div>
+        <p class="infinite-scroll-last"><%- data.text %></p>
+        <p class="infinite-scroll-error"><%- data.text %></p>
+    </div>
+
+    <div class="actions"><button class="primary view-more-button">View More</button></div>
+</script>
+<script id="page-to-top" type="text/x-magento-template">
+    <li class="back-to-top">End Page <%- data.page %></li>
+</script>
+<script type="text/x-magento-init">
+    {
+        "<?= $block->getContainer(); ?>": {
+            "scroll": <?= $block->getJsonBlock(); ?>
+        }
+    }
+</script>
+

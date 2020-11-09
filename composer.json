@@ -1,0 +1,27 @@
+{
+    "name": "boxleaf/module-infinatescroll",
+    "description": "Magento 2 Catalog List infinate scroll",
+    "type": "magento2-module",
+    "version": "1.2.0",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "authors": [
+        {
+            "name": "Daniel Coull",
+            "email": "hello@boxleafdigital.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": "~7.0|~7.1.3|~7.2|~7.3",
+        "ext-json": "*"
+    },
+    "autoload": {
+        "files": [ "registration.php" ],
+        "psr-4": {
+            "BoxLeaf\\InfinateScroll\\": ""
+        }
+    }
+}
