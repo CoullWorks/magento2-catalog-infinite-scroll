@@ -10,6 +10,20 @@
 define(['uiComponent', 'jquery', 'infinatescroll', "mage/template", 'imagesloaded', 'jquery-bridget', 'masonry', 'isotope', 'packery'],
     function (Component, $, InfiniteScroll, mageTemplate, imagesloaded, bridget, Masonry, Isotope, Packery) {
         'use strict';
+
+        $.urlParam = function(name, string){
+            var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(string);
+            if(results !== null) {
+                if (typeof results[1] !== 'undefined') {
+                    return results[1] || 0;
+                } else {
+                    return 0;
+                }
+            }else {
+                return 0;
+            }
+        }
+
         return Component.extend({
             defaults: {
                 settings: {
@@ -27,7 +41,7 @@ define(['uiComponent', 'jquery', 'infinatescroll', "mage/template", 'imagesloade
                     checkLastPage: '.pages-item-next .action.next',
                     scrollThreshold: 100,
                     loadOnScroll: true,
-                    history: 'push',
+                    history: false,
                     hideNav: '.pages',
                     status: '.page-load-status',
                     debug: false
@@ -150,7 +164,7 @@ define(['uiComponent', 'jquery', 'infinatescroll', "mage/template", 'imagesloade
             initScroll: function () {
                 let self = this;
 
-                self.settings.$element.infiniteScroll(self.config)
+                let infinate = self.settings.$element.infiniteScroll(self.config)
 
                 self.settings.$element.on( 'load.infiniteScroll', function(event, respose, path) {
                     let template = mageTemplate('#page-to-top');
@@ -168,11 +182,32 @@ define(['uiComponent', 'jquery', 'infinatescroll', "mage/template", 'imagesloade
                         $("html, body").animate({ scrollTop: 0 }, "slow");
                         return false;
                     });
+                });
+
+                self.settings.$element.on( 'history.infiniteScroll', function( event, title, path ) {
+
+                    if($.urlParam('p', path) !== 0) {
+                        let index = $.urlParam('p', path);
+                        var new_url = path.substring(0, path.indexOf('?'));
+                        history.pushState(null, document.title ,new_url );
+
+                        console.log(`History changed to: ${new_url}`);
+
+                    }
 
                 });
 
                 self.settings.$element.on( 'append.infiniteScroll', function( event, response, path, items ) {
                     $('body').trigger('contentUpdated');
+
+                    if($.urlParam('p', path) !== 0) {
+                        let index = $.urlParam('p', path);
+                        var new_url = path.substring(0, path.indexOf('?'));
+                        history.pushState(null, document.title ,new_url );
+
+                        console.log(`History changed to:  ${new_url} from ${path}`);
+
+                    }
                 });
 
                 self.initMobileButton();
