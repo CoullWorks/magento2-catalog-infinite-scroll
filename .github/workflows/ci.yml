@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  php-lint:
+    name: PHP lint (${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - name: Lint PHP files
+        run: |
+          find . -type f -name '*.php' -not -path './vendor/*' -print0 \
+            | xargs -0 -n1 -P4 php -l
+
+  coding-standard:
+    name: Magento 2 coding standard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: cs2pr
+          coverage: none
+      - name: Install PHP_CodeSniffer + Magento standard
+        run: |
+          composer global config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer global require --no-interaction --no-progress \
+            squizlabs/php_codesniffer "magento/magento-coding-standard:>=32"
+          echo "${COMPOSER_HOME:-$HOME/.composer}/vendor/bin" >> "$GITHUB_PATH"
+      - name: Run phpcs (Magento2)
+        run: phpcs --standard=phpcs.xml --report=full --report-checkstyle=phpcs.xml.out . || true
+      - name: Annotate results
+        run: cs2pr phpcs.xml.out || true
+
+  composer-validate:
+    name: composer validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - run: composer validate --strict --no-check-all
+
+  js-syntax:
+    name: JS syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Syntax-check first-party JS
+        run: |
+          node --check view/frontend/web/js/scroll.js
+          node --check view/frontend/requirejs-config.js
+
+  unit-tests:
+    name: Unit tests (needs Magento keys)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for Magento repo keys
+        id: keys
+        env:
+          PUB: ${{ secrets.MAGENTO_PUBLIC_KEY }}
+        run: |
+          if [ -z "$PUB" ]; then
+            echo "Magento keys not set — skipping unit tests."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Set up PHP
+        if: steps.keys.outputs.run == 'true'
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - name: Install magento/framework + PHPUnit
+        if: steps.keys.outputs.run == 'true'
+        run: |
+          composer config --global http-basic.repo.magento.com \
+            "${{ secrets.MAGENTO_PUBLIC_KEY }}" "${{ secrets.MAGENTO_PRIVATE_KEY }}"
+          composer config repositories.magento composer https://repo.magento.com/
+          composer require --no-interaction --no-progress --dev \
+            "magento/framework:>=103.0.0" "phpunit/phpunit:^10.5"
+      - name: Run PHPUnit
+        if: steps.keys.outputs.run == 'true'
+        run: vendor/bin/phpunit --testdox

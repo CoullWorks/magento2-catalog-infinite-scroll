@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<ruleset name="CoullWorks Catalog Infinite Scroll">
+    <description>Magento 2 coding standard for CoullWorks Catalog Infinite Scroll.</description>
+
+    <file>.</file>
+
+    <exclude-pattern>*/view/frontend/web/js/vendor/*</exclude-pattern>
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+
+    <arg name="extensions" value="php,phtml,xml,js,less,csv"/>
+    <arg value="sp"/>
+    <arg name="colors"/>
+
+    <rule ref="Magento2"/>
+</ruleset>

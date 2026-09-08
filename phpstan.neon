@@ -1,0 +1,12 @@
+# Run from a Magento root that has this module installed, or with
+# bitexpert/phpstan-magento available, so magento/framework classes resolve:
+#
+#   vendor/bin/phpstan analyse -c app/code/CoullWorks/CatalogInfiniteScroll/phpstan.neon
+#
+parameters:
+    level: 5
+    paths:
+        - Block
+        - Model
+    excludePaths:
+        - view/frontend/web/js/vendor/*
