@@ -1,0 +1,18 @@
+/**
+ * CoullWorks Catalog Infinite Scroll for Magento 2.
+ *
+ * @author    danrcoull <ttechitsolutions@gmail.com>
+ * @copyright Copyright (c) 2020-2026 CoullWorks
+ * @license   MIT
+ * @link      https://github.com/CoullWorks/magento2-catalog-infinite-scroll
+ *
+ * Brands the "CoullWorks" tab in Stores > Configuration with the logo.
+ */
+.config-nav .coullworks-config-tab .admin__page-nav-title strong,
+.coullworks-config-tab .admin__page-nav-title strong {
+    display: inline-block;
+    padding-left: 26px;
+    background: url('../images/coullworks-logo.svg') no-repeat left center;
+    background-size: 18px 18px;
+    line-height: 18px;
+}

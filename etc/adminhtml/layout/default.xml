@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * CoullWorks Catalog Infinite Scroll for Magento 2.
+ *
+ * @author    danrcoull <ttechitsolutions@gmail.com>
+ * @copyright Copyright (c) 2020-2026 CoullWorks
+ * @license   MIT
+ * @link      https://github.com/CoullWorks/magento2-catalog-infinite-scroll
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="CoullWorks_CatalogInfiniteScroll::css/coullworks-admin.css"/>
+    </head>
+</page>
