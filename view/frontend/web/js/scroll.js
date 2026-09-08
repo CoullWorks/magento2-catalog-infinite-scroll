@@ -69,10 +69,15 @@ define([
             this.element = element;
             this.$element = $(element);
             this.outlayer = false;
+            this.baseSelector = this.config.container || null;
 
             if (!this.settings.enabled) {
                 return;
             }
+
+            // An AJAX filter (layered navigation) can replace the list after load,
+            // so keep watching even when there's nothing to page through yet.
+            this._watchForReplacement();
 
             if ($(this.config.path).length === 0) {
                 this._log('No next-page link found for selector:', this.config.path);
@@ -262,6 +267,74 @@ define([
 
                 self._log('Tracked pageview:', link.pathname);
             });
+        },
+
+        /**
+         * Re-initialise on the new list when AJAX layered navigation (or any
+         * script) replaces the product list without a full page reload.
+         */
+        _watchForReplacement: function () {
+            var self = this;
+
+            if (self._observer || !self.baseSelector || typeof window.MutationObserver !== 'function') {
+                return;
+            }
+
+            var scope = document.querySelector('.column.main') ||
+                    document.querySelector('.columns') ||
+                    document.body,
+                pending = null;
+
+            self._observer = new window.MutationObserver(function () {
+                if (pending) {
+                    return;
+                }
+
+                pending = window.setTimeout(function () {
+                    pending = null;
+
+                    // Our list is still on the page (e.g. our own appends) — nothing to do.
+                    if (self.element && document.body.contains(self.element)) {
+                        return;
+                    }
+
+                    var next = document.querySelector(self.baseSelector);
+
+                    if (!next || next === self.element) {
+                        return;
+                    }
+
+                    self._log('List replaced — re-initialising on the new list');
+                    self._teardown();
+                    self.element = next;
+                    self.$element = $(next);
+                    self.outlayer = false;
+
+                    if ($(self.config.path).length > 0) {
+                        self._boot();
+                    }
+                }, 150);
+            });
+
+            self._observer.observe(scope, { childList: true, subtree: true });
+        },
+
+        /**
+         * Tear down the current Infinite Scroll instance and status block.
+         */
+        _teardown: function () {
+            try {
+                this.$element.infiniteScroll('destroy');
+            } catch (e) {
+                this._log('teardown:', e && e.message);
+            }
+
+            if (this.$status) {
+                this.$status.remove();
+                this.$status = null;
+            }
+
+            this.$element.removeClass('cw-infinite-scroll--layout cw-infinite-scroll--ready');
         },
 
         /**

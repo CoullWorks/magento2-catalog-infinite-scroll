@@ -95,6 +95,10 @@ Point it at the list's **Container Selector**, **Item Selector** and **Next Butt
 Selector**, pick a layout mode, and it runs — no code. Because Magento initialises the
 component per matched element, one page can host several independent infinite lists.
 
+**AJAX layered navigation:** if a filter replaces the product list without a full page
+reload, the module detects the swap and re-initialises on the new list automatically —
+no theme wiring or extension-specific hooks required.
+
 <details>
 <summary><b>Wiring it up by hand on a fully custom list</b></summary>
 
@@ -108,6 +112,7 @@ render the same shape, pointing the component at your selectors:
         "coullworksCatalogInfiniteScroll": {
             "config": {
                 "path": ".my-next-link",
+                "container": ".my-list-container",
                 "append": ".my-list-item",
                 "checkLastPage": ".my-next-link",
                 "scrollThreshold": 100,

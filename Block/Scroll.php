@@ -99,6 +99,7 @@ class Scroll extends Template
             'config' => [
                 'path' => $next,
                 'checkLastPage' => $next,
+                'container' => $this->getContainerSelector(),
                 'append' => (string) $this->resolve('item_selector', 'item_selector'),
                 'scrollThreshold' => (int) $this->resolve('scroll_threshold', 'scroll_threshold'),
                 'loadOnScroll' => (bool) $this->resolve('load_on_scroll', 'load_on_scroll'),

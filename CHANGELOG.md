@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-09-08
+
+### Fixed
+- **Infinite scroll now survives AJAX layered navigation.** When a filter replaces the
+  product list without a full page reload, the module detects the swap and
+  re-initialises on the new list automatically — previously it silently stopped working
+  until the page was reloaded. Resolves #2.
+- **No more overlapping items after append** in the masonry/isotope/packery modes: the
+  appended items are re-laid-out through Infinite Scroll's `outlayer` integration, and
+  the layout libraries stay lazy-loaded per mode. Resolves #4.
+
 ## [2.0.0] - 2026-09-08
 
 The first CoullWorks release — a full rebrand and modernization of the original
@@ -67,8 +78,8 @@ as a new module rather than an upgrade (see _Migration_ below).
   (raw TS/JS + React) to replace the Metafizzy stack and make the module MIT end to end.
 - **CoullWorks Core** — a shared base module (branding, helpers) across CoullWorks plugins.
 
-## [1.2.0] - 2021-01-20
+## 1.2.0 - 2021-01-20
 - Final release under the original `boxleaf/module-infinatescroll` name.
 
+[2.0.1]: https://github.com/CoullWorks/magento2-catalog-infinite-scroll/releases/tag/v2.0.1
 [2.0.0]: https://github.com/CoullWorks/magento2-catalog-infinite-scroll/releases/tag/v2.0.0
-[1.2.0]: https://github.com/CoullWorks/magento2-catalog-infinite-scroll/releases/tag/1.2.0
