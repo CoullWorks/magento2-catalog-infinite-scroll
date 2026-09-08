@@ -1,17 +1,19 @@
 <?php
 /**
- *   @package    BoxLeaf
- *   @author     Daniel Coull <ttechitsolutions@gmail.com>
- *   @copyright  01/01/2020, 16:45.$year Daniel Coull
- *   @version    CVS: $Id:$
- *  @since      File available since Release 1.0.0
+ * CoullWorks Catalog Infinite Scroll for Magento 2.
  *
+ * @author    danrcoull <ttechitsolutions@gmail.com>
+ * @copyright Copyright (c) 2020-2026 CoullWorks
+ * @license   MIT
+ * @link      https://github.com/CoullWorks/magento2-catalog-infinite-scroll
  */
 
-use \Magento\Framework\Component\ComponentRegistrar;
+declare(strict_types=1);
+
+use Magento\Framework\Component\ComponentRegistrar;
 
 ComponentRegistrar::register(
     ComponentRegistrar::MODULE,
-    'BoxLeaf_InfinateScroll',
-    isset($file) ? realpath(dirname($file)) : __DIR__
+    'CoullWorks_CatalogInfiniteScroll',
+    __DIR__
 );

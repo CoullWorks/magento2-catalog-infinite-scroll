@@ -1,81 +1,104 @@
-/*
- *   @package    BoxLeaf
- *   @author     Daniel Coull <ttechitsolutions@gmail.com>
- *   @copyright  01/01/2020, 16:45.$year Daniel Coull
- *   @version    CVS: $Id:$
- *  @since      File available since Release 1.0.0
- *
- */
+// CoullWorks Catalog Infinite Scroll for Magento 2.
+//
+// @author    danrcoull <ttechitsolutions@gmail.com>
+// @copyright Copyright (c) 2020-2026 CoullWorks
+// @license   MIT
+// @link      https://github.com/CoullWorks/magento2-catalog-infinite-scroll
+
+//
+//  Loader
+//  ---------------------------------------------
 
 .loader-ellips {
-  font-size: 20px; /* change size here */
-  position: relative;
-  width: 4em;
-  height: 1em;
-  margin: 10px auto;
-}
-.back-to-top {
-    width: 100%;
-    background: #cccccc;
-    height: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #000;
     font-size: 20px;
-    text-transform: uppercase;
+    position: relative;
+    width: 4em;
+    height: 1em;
+    margin: 10px auto;
 }
 
 .loader-ellips__dot {
-  display: block;
-  width: 1em;
-  height: 1em;
-  border-radius: 0.5em;
-  background: #555; /* change color here */
-  position: absolute;
-  animation-duration: 0.5s;
-  animation-timing-function: ease;
-  animation-iteration-count: infinite;
+    display: block;
+    width: 1em;
+    height: 1em;
+    border-radius: 0.5em;
+    background: #555;
+    position: absolute;
+    animation-duration: 0.5s;
+    animation-timing-function: ease;
+    animation-iteration-count: infinite;
 }
 
 .loader-ellips__dot:nth-child(1),
 .loader-ellips__dot:nth-child(2) {
-  left: 0;
+    left: 0;
 }
-.loader-ellips__dot:nth-child(3) { left: 1.5em; }
-.loader-ellips__dot:nth-child(4) { left: 3em; }
+
+.loader-ellips__dot:nth-child(3) {
+    left: 1.5em;
+}
+
+.loader-ellips__dot:nth-child(4) {
+    left: 3em;
+}
 
 @keyframes reveal {
-  from { transform: scale(0.001); }
-  to { transform: scale(1); }
+    from { transform: scale(0.001); }
+    to { transform: scale(1); }
 }
 
 @keyframes slide {
-  to { transform: translateX(1.5em) }
+    to { transform: translateX(1.5em); }
 }
 
 .loader-ellips__dot:nth-child(1) {
-  animation-name: reveal;
+    animation-name: reveal;
 }
 
 .loader-ellips__dot:nth-child(2),
 .loader-ellips__dot:nth-child(3) {
-  animation-name: slide;
+    animation-name: slide;
 }
 
 .loader-ellips__dot:nth-child(4) {
-  animation-name: reveal;
-  animation-direction: reverse;
+    animation-name: reveal;
+    animation-direction: reverse;
 }
 
-.infinate .product-items {
-  opacity: 0;
+//
+//  LCP-safe reveal
+//  ---------------------------------------------
+//  Only the masonry/isotope/packery modes hide the grid until the layout
+//  library has measured images. The default mode never hides content, so
+//  Largest Contentful Paint is not delayed.
+
+.cw-infinite-scroll--layout .product-items,
+.cw-infinite-scroll--layout.product-items {
+    opacity: 0;
+    transition: opacity 0.2s ease-in;
 }
+
+.cw-infinite-scroll--layout.cw-infinite-scroll--ready .product-items,
+.cw-infinite-scroll--layout.cw-infinite-scroll--ready.product-items {
+    opacity: 1;
+}
+
+//
+//  Status block
+//  ---------------------------------------------
 
 .page-load-status {
-  display: none; /* hidden by default */
-  padding-top: 20px;
-  border-top: 1px solid #DDD;
-  text-align: center;
-  color: #777;
+    display: none; // shown by Infinite Scroll while loading
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+    text-align: center;
+    color: #777;
+}
+
+.cw-infinite-scroll__more {
+    text-align: center;
+
+    .view-more-button {
+        display: none; // shown by the component on narrow viewports
+    }
 }

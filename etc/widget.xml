@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * CoullWorks Catalog Infinite Scroll for Magento 2.
+ *
+ * @author    danrcoull <ttechitsolutions@gmail.com>
+ * @copyright Copyright (c) 2020-2026 CoullWorks
+ * @license   MIT
+ * @link      https://github.com/CoullWorks/magento2-catalog-infinite-scroll
+ */
+-->
+<widgets xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Widget:etc/widget.xsd">
+    <widget id="coullworks_catalog_infinite_scroll"
+            class="CoullWorks\CatalogInfiniteScroll\Block\Widget\Scroll"
+            is_email_compatible="false"
+            placeholder_image="CoullWorks_CatalogInfiniteScroll::images/coullworks-logo.svg">
+        <label translate="true">Infinite Scroll (CoullWorks)</label>
+        <description translate="true">Attach infinite scroll / load-more to any product or content list on this page — works in Page Builder, CMS pages and static blocks. Point it at the list container and its pagination.</description>
+        <parameters>
+            <parameter name="container_selector" xsi:type="text" required="true" visible="true" sort_order="10">
+                <label translate="true">List Container Selector</label>
+                <description translate="true">CSS selector for the list wrapper (e.g. .products.list.items or [data-content-type="products"] .product-items). Comma-separate for several lists.</description>
+            </parameter>
+            <parameter name="item_selector" xsi:type="text" required="true" visible="true" sort_order="20">
+                <label translate="true">Item Selector</label>
+                <description translate="true">CSS selector for a single item inside the container.</description>
+                <value>.item.product.product-item</value>
+            </parameter>
+            <parameter name="next_button_class" xsi:type="text" required="true" visible="true" sort_order="30">
+                <label translate="true">Next Button Selector</label>
+                <description translate="true">CSS selector for the pagination "next" link.</description>
+                <value>.pages-item-next .action.next</value>
+            </parameter>
+            <parameter name="display_type" xsi:type="select" required="true" visible="true" sort_order="40"
+                       source_model="CoullWorks\CatalogInfiniteScroll\Model\Config\Source\DisplayType">
+                <label translate="true">Layout Mode</label>
+            </parameter>
+            <parameter name="load_on_scroll" xsi:type="select" required="true" visible="true" sort_order="50"
+                       source_model="Magento\Config\Model\Config\Source\Yesno">
+                <label translate="true">Load On Scroll</label>
+            </parameter>
+            <parameter name="hide_navigation" xsi:type="select" required="false" visible="true" sort_order="60"
+                       source_model="Magento\Config\Model\Config\Source\Yesno">
+                <label translate="true">Hide Pagination</label>
+            </parameter>
+            <parameter name="navigation_class" xsi:type="text" required="false" visible="true" sort_order="70">
+                <label translate="true">Pagination Selector</label>
+                <description translate="true">CSS selector for the pagination control to hide.</description>
+                <value>.pages</value>
+            </parameter>
+            <parameter name="show_end_status" xsi:type="select" required="false" visible="true" sort_order="80"
+                       source_model="Magento\Config\Model\Config\Source\Yesno">
+                <label translate="true">Show End Status</label>
+            </parameter>
+            <parameter name="end_status_text" xsi:type="text" required="false" visible="true" sort_order="90">
+                <label translate="true">End Status Text</label>
+                <value>No more items</value>
+            </parameter>
+        </parameters>
+    </widget>
+</widgets>

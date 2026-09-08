@@ -1,27 +1,40 @@
 {
-    "name": "boxleaf/module-infinatescroll",
-    "description": "Magento 2 Catalog List infinate scroll",
+    "name": "coullworks/module-catalog-infinite-scroll",
+    "description": "CoullWorks Catalog Infinite Scroll for Magento 2 — AJAX infinite scroll / load-more for category, search, Page Builder, CMS and widget product lists, with optional masonry, isotope and packery layouts.",
     "type": "magento2-module",
-    "version": "1.2.0",
-    "license": [
-        "OSL-3.0",
-        "AFL-3.0"
-    ],
+    "license": "MIT",
     "authors": [
         {
-            "name": "Daniel Coull",
-            "email": "hello@boxleafdigital.com"
+            "name": "danrcoull",
+            "email": "ttechitsolutions@gmail.com",
+            "homepage": "https://coullworks.com"
         }
     ],
-    "minimum-stability": "dev",
+    "homepage": "https://github.com/CoullWorks/magento2-catalog-infinite-scroll",
+    "support": {
+        "issues": "https://github.com/CoullWorks/magento2-catalog-infinite-scroll/issues",
+        "source": "https://github.com/CoullWorks/magento2-catalog-infinite-scroll"
+    },
     "require": {
-        "php": "~7.0|~7.1.3|~7.2|~7.3",
-        "ext-json": "*"
+        "php": "~8.2.0 || ~8.3.0 || ~8.4.0",
+        "ext-json": "*",
+        "magento/framework": ">=103.0.0"
+    },
+    "require-dev": {
+        "magento/magento-coding-standard": ">=32",
+        "phpunit/phpunit": "^10.5 || ^11.0"
     },
     "autoload": {
-        "files": [ "registration.php" ],
+        "files": [
+            "registration.php"
+        ],
         "psr-4": {
-            "BoxLeaf\\InfinateScroll\\": ""
+            "CoullWorks\\CatalogInfiniteScroll\\": ""
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "CoullWorks\\CatalogInfiniteScroll\\Test\\": "Test/"
         }
     }
 }

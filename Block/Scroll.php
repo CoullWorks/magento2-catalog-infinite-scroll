@@ -1,162 +1,136 @@
 <?php
 /**
- *   @package    BoxLeaf
- *   @author     Daniel Coull <ttechitsolutions@gmail.com>
- *   @copyright  01/01/2020, 16:45.$year Daniel Coull
- *   @version    CVS: $Id:$
- *  @since      File available since Release 1.0.0
+ * CoullWorks Catalog Infinite Scroll for Magento 2.
  *
+ * @author    danrcoull <ttechitsolutions@gmail.com>
+ * @copyright Copyright (c) 2020-2026 CoullWorks
+ * @license   MIT
+ * @link      https://github.com/CoullWorks/magento2-catalog-infinite-scroll
  */
 
-namespace BoxLeaf\InfinateScroll\Block;
+declare(strict_types=1);
 
-use Magento\Framework\App\Config\ScopeConfigInterface;
+namespace CoullWorks\CatalogInfiniteScroll\Block;
+
 use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Store\Model\ScopeInterface;
 
 /**
- * Class Scroll
- * @package BoxLeaf\InfinateScroll\Block
+ * Renders the infinite-scroll initialiser for a product/content list.
+ *
+ * Reads its selectors and options from a widget instance when present,
+ * otherwise from the store configuration, so the same block drives the
+ * category/search auto-attach and every manually placed widget.
+ *
+ * @api
  */
-class Scroll extends \Magento\Framework\View\Element\Template {
+class Scroll extends Template
+{
+    private const XML_PATH = 'catalog_infinite_scroll/general/';
 
     /**
-     * @var ScopeConfigInterface
+     * RequireJS alias for the frontend component (see requirejs-config.js).
      */
-    protected  $_scopeConfig;
-    /**
-     * @var Json
-     */
-    protected  $_serializer;
+    private const COMPONENT = 'coullworksCatalogInfiniteScroll';
 
     /**
-     * Scroll constructor.
      * @param Context $context
-     * @param ScopeConfigInterface $scopeConfig
      * @param Json $serializer
      * @param array $data
      */
-    public function __construct(Context $context,
-                                ScopeConfigInterface $scopeConfig,
-                                Json $serializer,
-                                array $data = []) {
-
-
-        $this->_scopeConfig = $scopeConfig;
-        $this->_serializer = $serializer;
+    public function __construct(
+        Context $context,
+        private readonly Json $serializer,
+        array $data = []
+    ) {
         parent::__construct($context, $data);
     }
 
     /**
+     * The container selector(s) this instance attaches to.
+     */
+    public function getContainerSelector(): string
+    {
+        return (string) $this->resolve('container_selector', 'product_container_class');
+    }
+
+    /**
+     * Whether the end-status / loader block should be shown.
+     */
+    public function isShowStatus(): bool
+    {
+        return (bool) $this->resolve('show_end_status', 'show_end_status');
+    }
+
+    /**
+     * Message shown once the last page has loaded.
+     */
+    public function getEndStatusText(): string
+    {
+        return (string) $this->resolve('end_status_text', 'end_status_text');
+    }
+
+    /**
+     * The `text/x-magento-init` payload that boots the component on the container.
+     */
+    public function getInitJson(): string
+    {
+        return $this->serializer->serialize([
+            $this->getContainerSelector() => [
+                self::COMPONENT => $this->getComponentConfig(),
+            ],
+        ]);
+    }
+
+    /**
+     * Config + settings passed to the JS component.
      *
+     * @return array<string, array<string, mixed>>
      */
-    const XML_PATH_SCROLL = 'infinatescroll/';
-
-    /**
-     * @param $field
-     * @param null $storeId
-     * @return mixed
-     */
-    public function getConfigValue($field, $storeId = null)
+    public function getComponentConfig(): array
     {
-        return $this->_scopeConfig->getValue(
-            $field, ScopeInterface::SCOPE_STORE, $storeId
-        );
+        $next = (string) $this->resolve('next_button_class', 'next_button_class');
+        $showStatus = $this->isShowStatus();
+        $hideNav = (bool) $this->resolve('hide_navigation', 'hide_navigation');
+
+        return [
+            'config' => [
+                'path' => $next,
+                'checkLastPage' => $next,
+                'append' => (string) $this->resolve('item_selector', 'item_selector'),
+                'scrollThreshold' => (int) $this->resolve('scroll_threshold', 'scroll_threshold'),
+                'loadOnScroll' => (bool) $this->resolve('load_on_scroll', 'load_on_scroll'),
+                'hideNav' => $hideNav ? (string) $this->resolve('navigation_class', 'navigation_class') : false,
+                'status' => $showStatus ? '.page-load-status' : false,
+                'debug' => (bool) $this->resolve('debug', 'debug'),
+            ],
+            'settings' => [
+                'enabled' => true,
+                'analytics' => (bool) $this->resolve('analytics_tracking', 'analytics_tracking'),
+                'updateUrl' => (bool) $this->resolve('update_url', 'update_url'),
+                'status' => $showStatus,
+                'text' => $showStatus ? $this->getEndStatusText() : '',
+                'display_type' => (string) $this->resolve('display_type', 'display_type'),
+            ],
+        ];
     }
 
     /**
-     * @param $code
-     * @param null $storeId
+     * Return a widget-instance value when set, otherwise the store config value.
+     *
+     * @param string $dataKey
+     * @param string $configCode
      * @return mixed
      */
-    public function getGeneralConfig($code, $storeId = null)
+    private function resolve(string $dataKey, string $configCode): mixed
     {
-
-        return $this->getConfigValue(self::XML_PATH_SCROLL .'general/'. $code, $storeId);
-    }
-
-    /**
-     * Show the status block
-     * @return  bool|null
-     */
-    public function showStatus():? bool {
-        return $this->getGeneralConfig('show_end_status');
-    }
-
-    /**
-     * Is block enabled
-     * @return  bool|null
-     */
-    public function enabled():? bool {
-        return $this->getGeneralConfig('enable');
-    }
-
-    /**
-     * @return bool|null
-     */
-    public function enableDebug():? bool
-    {
-        return  $this->getGeneralConfig('debug') ;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getContainer() {
-        return $this->getGeneralConfig('product_container_class');
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getDisplayType() {
-        return $this->getGeneralConfig('display_type');
-    }
-
-    /**
-     * @return string
-     */
-    public function getJsonBlock():? string {
-
-        $settings = [];
-        $config =[];
-        $enable =  $this->enabled();
-        $loadOnScroll =  boolval($this->getGeneralConfig('load_on_scroll'));
-        $analytics =  boolval($this->getGeneralConfig('analytics_tracking'));
-        $nextButton =  $this->getGeneralConfig('next_button_class');
-        $hideNav =  boolval($this->getGeneralConfig('hide_navigation'));
-        $debug = boolval($this->enableDebug());
-        if($hideNav) {
-            $navClass = $this->getGeneralConfig('navigation_class');
-            $config['hideNav'] = $navClass;
-        }else {
-            $config['hideNav'] = false;
-        }
-        $endStatusText = '';
-        if(boolval($this->showStatus()))
-        {
-            $endStatusText = $this->getGeneralConfig('end_status_text');
-            $config['status'] = '.page-load-status';
-        }else {
-            $config['status'] = false;
+        $value = $this->getData($dataKey);
+        if ($value !== null && $value !== '') {
+            return $value;
         }
 
-       $settings =  array_merge($settings, [
-            'enabled' => $enable,
-            'analytics' => $analytics,
-            'status' => boolval($this->showStatus()),
-            'text' => $endStatusText,
-            'display_type' => $this->getDisplayType()
-        ]);
-
-        $config = array_merge($config, [
-            'path' => $nextButton,
-            'checkLastPage' => $nextButton,
-            'loadOnScroll' => $loadOnScroll,
-            'debug' => $debug
-        ]);
-
-        return $this->_serializer->serialize(['config' => $config, 'settings' => $settings]);
+        return $this->_scopeConfig->getValue(self::XML_PATH . $configCode, ScopeInterface::SCOPE_STORE);
     }
 }

@@ -1,37 +1,41 @@
 <?php
 /**
- *   @package    BoxLeaf
- *   @author     Daniel Coull <ttechitsolutions@gmail.com>
- *   @copyright  01/01/2020, 16:45.$year Daniel Coull
- *   @version    CVS: $Id:$
- *  @since      File available since Release 1.0.0
+ * CoullWorks Catalog Infinite Scroll for Magento 2.
  *
+ * @author    danrcoull <ttechitsolutions@gmail.com>
+ * @copyright Copyright (c) 2020-2026 CoullWorks
+ * @license   MIT
+ * @link      https://github.com/CoullWorks/magento2-catalog-infinite-scroll
  */
 
-namespace BoxLeaf\InfinateScroll\Model\Config\Source;
+declare(strict_types=1);
+
+namespace CoullWorks\CatalogInfiniteScroll\Model\Config\Source;
 
 use Magento\Framework\Data\OptionSourceInterface;
 
 /**
- * Class DisplayType
- * @package BoxLeaf\InfinateScroll\Model\Config\Source
+ * Layout modes offered for the appended items.
  */
-class DisplayType implements OptionSourceInterface {
+class DisplayType implements OptionSourceInterface
+{
+    public const DEFAULT = '1';
+    public const MASONRY = '2';
+    public const ISOTOPE = '3';
+    public const PACKERY = '4';
 
     /**
-     * Return array of options as value-label pairs
+     * @inheritDoc
      *
-     * @return array Format: array(array('value' => '<value>', 'label' => '<label>'), ...)
+     * @return array<int, array{value: string, label: \Magento\Framework\Phrase}>
      */
-    public function toOptionArray()
+    public function toOptionArray(): array
     {
-        $choose = [
-            '1' => 'Default',
-            '2' => 'Masonry',
-            '3' => 'Isotope',
-            '4' => 'Packery'
-
+        return [
+            ['value' => self::DEFAULT, 'label' => __('Default (theme grid)')],
+            ['value' => self::MASONRY, 'label' => __('Masonry')],
+            ['value' => self::ISOTOPE, 'label' => __('Isotope')],
+            ['value' => self::PACKERY, 'label' => __('Packery')],
         ];
-        return $choose;
     }
 }
