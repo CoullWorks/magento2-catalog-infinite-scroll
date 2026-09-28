@@ -16,7 +16,7 @@
         "source": "https://github.com/CoullWorks/magento2-catalog-infinite-scroll"
     },
     "require": {
-        "php": "~8.2.0 || ~8.3.0 || ~8.4.0",
+        "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
         "ext-json": "*",
         "magento/framework": ">=103.0.0"
     },

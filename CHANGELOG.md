@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.3] - 2026-09-28
+
+### Changed
+- **PHP 8.5 support, so the module installs on Magento 2.4.9.** Adobe Commerce and
+  Magento Open Source 2.4.9 run production on PHP 8.5, which the Composer constraint did
+  not allow, so the package would not install there. The constraint now includes
+  `~8.5.0`, and CI lints every PHP file on 8.5 as well as 8.2, 8.3 and 8.4. No code
+  changes were needed: every file lints clean on PHP 8.5.11, and none uses the casts,
+  backtick operator or `__sleep`/`__wakeup` that 8.5 deprecates.
+
 ## [2.0.2] - 2026-09-09
 
 ### Fixed
@@ -89,5 +99,7 @@ as a new module rather than an upgrade (see _Migration_ below).
 ## 1.2.0 - 2021-01-20
 - Final release under the original `boxleaf/module-infinatescroll` name.
 
+[2.0.3]: https://github.com/CoullWorks/magento2-catalog-infinite-scroll/releases/tag/v2.0.3
+[2.0.2]: https://github.com/CoullWorks/magento2-catalog-infinite-scroll/releases/tag/v2.0.2
 [2.0.1]: https://github.com/CoullWorks/magento2-catalog-infinite-scroll/releases/tag/v2.0.1
 [2.0.0]: https://github.com/CoullWorks/magento2-catalog-infinite-scroll/releases/tag/v2.0.0
