@@ -208,6 +208,6 @@ Questions and bugs: [open an issue](https://github.com/CoullWorks/magento2-catal
 ---
 
 <p align="center">
-  <a href="https://coullworks.com"><b>⚓ Powered by CoullWorks</b></a><br>
-  <sub>Built in the open by <a href="https://coullworks.com">CoullWorks</a> — web &amp; software engineering. <a href="https://coullworks.com">coullworks.com</a></sub>
+  <a href="https://www.coullworks.com/projects/magento/infinite-scroll"><b>⚓ Powered by CoullWorks</b></a><br>
+  <sub>Built in the open by <a href="https://www.coullworks.com">CoullWorks</a> — web &amp; software engineering. <a href="https://www.coullworks.com">coullworks.com</a></sub>
 </p>
