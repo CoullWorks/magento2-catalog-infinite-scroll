@@ -79,33 +79,48 @@ define([
             // so keep watching even when there's nothing to page through yet.
             this._watchForReplacement();
 
-            if ($(this.config.path).length === 0) {
+            var hasNext = $(this.config.path).length > 0;
+
+            // The final page has no next link, but Back from a product page still
+            // has to rebuild the earlier pages, so only a plain visit stops here.
+            if (!hasNext && !this._shouldRestore()) {
                 this._log('No next-page link found for selector:', this.config.path);
 
                 return;
             }
 
-            this._boot();
+            this._boot(hasNext);
         },
 
         /**
          * Lazily load the core scroll libraries, then wire everything up.
          */
-        _boot: function () {
-            var self = this;
+        _boot: function (hasNext) {
+            var self = this,
+                deps = hasNext ? ['infinite-scroll', 'imagesloaded', 'jquery-bridget'] : ['imagesloaded', 'jquery-bridget'];
 
-            require(['infinite-scroll', 'imagesloaded', 'jquery-bridget'], function (InfiniteScroll, imagesLoaded, jQueryBridget) {
-                var bridget = $.bridget || jQueryBridget;
+            require(deps, function () {
+                var libs = [].slice.call(arguments),
+                    jQueryBridget = libs.pop(),
+                    imagesLoaded = libs.pop(),
+                    bridget = $.bridget || jQueryBridget;
 
-                bridget('infiniteScroll', InfiniteScroll, $);
-                InfiniteScroll.imagesLoaded = imagesLoaded;
+                if (hasNext) {
+                    bridget('infiniteScroll', libs[0], $);
+                    libs[0].imagesLoaded = imagesLoaded;
+                }
 
                 self._imagesLoaded = imagesLoaded;
                 self._log('Initialised on', self.config.container || self.element);
                 self._buildStatusBlock();
                 self._initLayout(function () {
                     self._restoreHistory(function () {
-                        self._initScroll();
+                        if (hasNext) {
+                            self._initScroll();
+                        } else {
+                            self._showEnd();
+                        }
+
                         self._trackPageViews();
                         self._trackScroll();
                     });
@@ -135,25 +150,73 @@ define([
             self.$element.addClass('cw-infinite-scroll--layout');
 
             require([mode, 'imagesloaded', 'jquery-bridget'], function (Layout, imagesLoaded, jQueryBridget) {
-                var bridget = $.bridget || jQueryBridget;
+                var bridget = $.bridget || jQueryBridget,
+                    sizer = { columnWidth: '.cw-grid-sizer', gutter: 10 },
+                    tag;
 
                 bridget(mode, Layout, $);
 
-                self.$element[mode]({
-                    itemSelector: 'none', // hold layout until images are measured
-                    columnWidth: self.config.append,
-                    percentPosition: true,
-                    gutter: 10
-                });
-                self.outlayer = self.$element.data(mode);
+                // The sizer is an empty item the stylesheet gives the column width, so
+                // the library measures real columns instead of theme margins.
+                tag = /^(OL|UL)$/.test(self.element.tagName) ? 'li' : 'div';
+                self.$sizer = $('<' + tag + ' class="cw-grid-sizer" aria-hidden="true"></' + tag + '>');
+                self.$element.prepend(self.$sizer);
+                self._layoutMode = mode;
 
+                // Start only once the images are measured, so items never stack at 0,0.
                 imagesLoaded(self.element, function () {
+                    self.$element[mode]($.extend({
+                        itemSelector: self.config.append,
+                        percentPosition: true,
+                        transitionDuration: 0,
+                        masonry: sizer
+                    }, sizer));
+                    self.outlayer = self.$element.data(mode);
                     self.$element.addClass('cw-infinite-scroll--ready');
-                    self.$element[mode]('option', { itemSelector: self.config.append });
-                    self.$element[mode]('reloadItems');
-                    self.$element[mode]('layout');
+                    self._relayoutOnImages();
                     done();
                 });
+            });
+        },
+
+        /**
+         * Re-run the layout. After items were added outside the library (a Back
+         * restore) the item list is rebuilt first. Isotope keeps its own filtered
+         * list, so it re-arranges instead.
+         *
+         * @param {Boolean} [reload]
+         */
+        _relayout: function (reload) {
+            var layout = this.outlayer;
+
+            if (!layout) {
+                return;
+            }
+
+            if (reload) {
+                layout.reloadItems();
+            }
+
+            if (this._layoutMode === 'isotope') {
+                layout.arrange();
+            } else {
+                layout.layout();
+            }
+        },
+
+        /**
+         * Images that finish after the first measure (lazy or slow) change item
+         * heights, so lay the grid out again as each one arrives.
+         */
+        _relayoutOnImages: function () {
+            var self = this,
+                timer = null;
+
+            self._imagesLoaded(self.element).on('progress', function () {
+                window.clearTimeout(timer);
+                timer = window.setTimeout(function () {
+                    self._relayout();
+                }, 50);
             });
         },
 
@@ -166,6 +229,31 @@ define([
 
             this.$status = $(markup);
             this.$status.insertAfter(this.$element);
+            this.$live = this.$status.filter('.cw-infinite-scroll__live');
+        },
+
+        /**
+         * Say something to screen readers through the polite live region.
+         *
+         * @param {String} text
+         */
+        _announce: function (text) {
+            if (this.$live && this.$live.length) {
+                this.$live.text(text || '');
+            }
+        },
+
+        /**
+         * Final page reached without loading anything (Back to ?p=last): there is
+         * no scroll instance to show the end message, so show it directly.
+         */
+        _showEnd: function () {
+            if (!this.settings.status || !this.$status) {
+                return;
+            }
+
+            this.$status.filter('.page-load-status').show().find('.infinite-scroll-last').show();
+            this._announce(this.settings.text);
         },
 
         /**
@@ -182,12 +270,27 @@ define([
                     scrollThreshold: self.config.scrollThreshold,
                     loadOnScroll: self.config.loadOnScroll,
                     hideNav: self.config.hideNav || false,
-                    status: self.settings.status && self.$status ? self.$status.find('.page-load-status')[0] : false,
+                    status: self.settings.status && self.$status ? self.$status.filter('.page-load-status')[0] : false,
                     outlayer: self.outlayer || false,
                     debug: !!self.config.debug
                 };
 
             self.$element.infiniteScroll(options);
+
+            if (self.settings.status && self.$live) {
+                self.$element.on('request.infiniteScroll', function () {
+                    self._announce(self.$live.data('loading'));
+                }).on('append.infiniteScroll', function () {
+                    // The end message can arrive first; only clear our own loading note.
+                    if (self.$live.text() === self.$live.data('loading')) {
+                        self._announce('');
+                    }
+                }).on('last.infiniteScroll', function () {
+                    self._announce(self.settings.text);
+                }).on('error.infiniteScroll', function () {
+                    self._announce(self.$live.data('error'));
+                });
+            }
 
             self.$element.on('append.infiniteScroll', function (event, response, path) {
                 $('body').trigger('contentUpdated');
@@ -219,10 +322,20 @@ define([
             });
 
             function apply(mql) {
-                var auto = mql.matches && self.config.loadOnScroll;
+                var wanted = mql.matches && self.config.loadOnScroll;
 
-                self.$element.infiniteScroll('option', { loadOnScroll: !!auto });
-                $button.toggle(!auto && !self._lastPageReached);
+                // While a Back restore settles, scrolling must not trigger a load:
+                // the restore itself moves the page and would fetch the next one.
+                self.$element.infiniteScroll('option', { loadOnScroll: !!wanted && !self._settling });
+                $button.toggle(!wanted && !self._lastPageReached);
+            }
+
+            if (self._restored) {
+                self._settling = true;
+                window.setTimeout(function () {
+                    self._settling = false;
+                    apply(query);
+                }, 800);
             }
 
             apply(query);
@@ -341,6 +454,15 @@ define([
         },
 
         /**
+         * Whether this load may need the earlier pages put back.
+         *
+         * @return {Boolean}
+         */
+        _shouldRestore: function () {
+            return this.settings.updateUrl && this._currentPage() > 1 && this._isHistoryNavigation();
+        },
+
+        /**
          * Back/Forward to a list whose URL names the last page loaded (?p=N):
          * the browser reloads only page N, so fetch the earlier pages, put them
          * back in front and return to the saved scroll position. The next page
@@ -355,7 +477,7 @@ define([
                 pages = [],
                 i;
 
-            if (!self.settings.updateUrl || !self._isHistoryNavigation()) {
+            if (!self._shouldRestore()) {
                 self._state = { first: current, last: current, scrollY: 0 };
                 done();
 
@@ -392,7 +514,8 @@ define([
             })).done(function () {
                 var results = pages.length === 1 ? [arguments[0]] : [].slice.call(arguments),
                     $first = self.$element.find(self.config.append).first(),
-                    index = $(self.config.container || self.element).index(self.element);
+                    index = $(self.config.container || self.element).index(self.element),
+                    inserted = [];
 
                 results.sort(function (a, b) {
                     return a.page - b.page;
@@ -405,31 +528,63 @@ define([
                         $items = list ? $(list).find(self.config.append) : $();
 
                     $items.each(function () {
-                        $(document.importNode(this, true)).insertBefore($first);
+                        var node = document.importNode(this, true);
+
+                        $(node).insertBefore($first);
+                        inserted.push(node);
                     });
                 });
 
-                if (self.outlayer) {
-                    self.outlayer.reloadItems();
-                    self.outlayer.layout();
-                }
-
-                $('body').trigger('contentUpdated');
-                window.setTimeout(function () {
-                    window.scrollTo(0, saved.scrollY || 0);
-
-                    if ('scrollRestoration' in window.history) {
-                        window.history.scrollRestoration = 'auto';
-                    }
-                }, 0);
+                self._restored = true;
                 self._log('Restored pages', saved.first, 'to', current - 1, 'after history navigation');
+
+                // Settle the layout only once the restored images have their size,
+                // otherwise the saved position lands on content that is still moving.
+                self._whenImagesSettle(inserted, function () {
+                    self._relayout(true);
+                    $('body').trigger('contentUpdated');
+                    window.scrollTo(0, saved.scrollY || 0);
+                    self._restoreScrollMode();
+                    window.requestAnimationFrame(function () {
+                        window.requestAnimationFrame(function () {
+                            done();
+                        });
+                    });
+                });
             }).fail(function () {
                 self._log('Could not restore earlier pages; showing the current page only');
+                self._restoreScrollMode();
+                done();
+            });
+        },
 
-                if ('scrollRestoration' in window.history) {
-                    window.history.scrollRestoration = 'auto';
-                }
-            }).always(done);
+        /**
+         * Run the callback when the given images have loaded, or after a few
+         * seconds at most so a broken image cannot hold the page back.
+         *
+         * @param {Array} nodes
+         * @param {Function} callback
+         */
+        _whenImagesSettle: function (nodes, callback) {
+            var finished = false,
+                finish = function () {
+                    if (!finished) {
+                        finished = true;
+                        callback();
+                    }
+                };
+
+            window.setTimeout(finish, 4000);
+            this._imagesLoaded(nodes, finish);
+        },
+
+        /**
+         * Hand scrolling back to the browser after a restore.
+         */
+        _restoreScrollMode: function () {
+            if ('scrollRestoration' in window.history) {
+                window.history.scrollRestoration = 'auto';
+            }
         },
 
         /**
