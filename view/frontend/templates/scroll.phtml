@@ -27,8 +27,11 @@ use Magento\Framework\Escaper;
             </div>
         </div>
         <p class="infinite-scroll-last"><%- data.text %></p>
-        <p class="infinite-scroll-error"><%- data.text %></p>
+        <p class="infinite-scroll-error"><?= $escaper->escapeHtml(__('Could not load more products. Please try again.')) ?></p>
     </div>
+    <p class="cw-infinite-scroll__live" role="status" aria-live="polite" aria-atomic="true"
+       data-loading="<?= $escaper->escapeHtmlAttr(__('Loading more products')) ?>"
+       data-error="<?= $escaper->escapeHtmlAttr(__('Could not load more products. Please try again.')) ?>"></p>
     <div class="actions cw-infinite-scroll__more">
         <button type="button" class="action primary view-more-button">
             <?= $escaper->escapeHtml(__('View More')) ?>

@@ -93,6 +93,18 @@ URL never changes and nothing is restored.
 grid fades in once images are measured so items don't jump. The default mode never hides
 content, so it has no effect on LCP.
 
+In the three layout modes the module gives each item a fixed column width (2 columns
+below 768px, 3 from 768px, with a 10px gutter) and zero side margins, so the library
+positions items from real column measurements instead of theme margins. The grid starts
+once images are measured, and lays out again as late images load, after more pages are
+appended, after Back restores earlier pages, and on resize.
+
+## Accessibility
+
+Loading, end-of-list and error messages are also announced through a visually hidden
+`aria-live="polite"` region, so screen reader users hear them even though the visible
+status block is shown and hidden by the scroll library.
+
 ## Use it on any list (Page Builder, CMS, static blocks)
 
 Add the **"Infinite Scroll (CoullWorks)"** widget wherever you can insert content:
