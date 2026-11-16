@@ -84,8 +84,60 @@
 }
 
 //
+//  Layout modes (masonry / isotope / packery)
+//  ---------------------------------------------
+//  The layout library positions the items, so the theme's own item width, float
+//  and side margins would fight it. Items get an explicit column width instead
+//  (2 columns, 3 from 768px) with a 10px gutter the library adds; the empty
+//  .cw-grid-sizer is the item the library measures a column from. Vertical
+//  spacing is a bottom margin, which the library counts as part of the item.
+
+.cw-infinite-scroll--layout.cw-infinite-scroll--layout {
+    position: relative;
+
+    > .product-item,
+    > .cw-grid-sizer {
+        float: none !important;
+        box-sizing: border-box;
+        width: calc((100% - 10px) / 2) !important;
+        margin: 0 0 10px !important;
+        padding: 0;
+    }
+
+    > .cw-grid-sizer {
+        height: 0;
+        visibility: hidden;
+        pointer-events: none;
+        margin: 0 !important;
+    }
+
+    > .product-item .product-item-info {
+        width: 100%;
+    }
+
+    @media (min-width: 768px) {
+        > .product-item,
+        > .cw-grid-sizer {
+            width: calc((100% - 20px) / 3) !important;
+        }
+    }
+}
+
+//
 //  Status block
 //  ---------------------------------------------
+
+.cw-infinite-scroll__live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+    white-space: nowrap;
+}
 
 .page-load-status {
     display: none; // shown by Infinite Scroll while loading
@@ -100,5 +152,13 @@
 
     .view-more-button {
         display: none; // shown by the component on narrow viewports
+    }
+}
+
+.page-load-status {
+    .infinite-scroll-request,
+    .infinite-scroll-last,
+    .infinite-scroll-error {
+        display: none; // the library shows the one that applies
     }
 }
