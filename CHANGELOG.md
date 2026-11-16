@@ -4,6 +4,33 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2026-11-16
+
+### Fixed
+- **Back from the final page restores the list.** Pressing Back from a product after
+  loading the last page (`?p=4`) showed only that page, because the module stopped when
+  there was no next link and never ran the restore. It now restores the earlier pages
+  and the scroll position, and shows the end message.
+- **Loading spinner and "No more products" now show.** The status element was looked up
+  inside itself and never found, so neither appeared. Both now show, and loading, end
+  and error messages are announced through an `aria-live="polite"` region. The error
+  message no longer repeats the end text.
+- **Back no longer loads an extra page after restoring.** Auto-load is held off while a
+  restore settles, and the restore waits for the restored images before it lays out and
+  scrolls. Back from `?p=3` returns to `?p=3` with the saved scroll position every time.
+- **Layout modes work on Luma.** Isotope left the first items stacked at the top and
+  appended items in one column; Masonry and Packery left irregular gaps. The library now
+  starts after images are measured, measures columns from a sizer element with explicit
+  item widths, and lays out again on image load, append, Back restore and resize.
+  Default, Masonry, Isotope and Packery all lay out without overlapping items.
+- Config paths and the public API are unchanged. No layout option was removed.
+
+### Notes
+- Verified on Magento 2.4.9 / PHP 8.4 in Chromium at 1280px and 390px: 8/16/24/32
+  products with none twice, `?p` URLs, Back from `?p=3` (five times) and from `?p=4`,
+  spinner and end message, and no overlapping product boxes in all four layout modes
+  after load, after Back and after a resize.
+
 ## [2.1.0] - 2026-11-16
 
 ### Fixed
