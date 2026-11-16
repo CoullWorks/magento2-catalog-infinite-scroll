@@ -132,6 +132,10 @@ class Scroll extends Template
             return $value;
         }
 
-        return $this->_scopeConfig->getValue(self::XML_PATH . $configCode, ScopeInterface::SCOPE_STORE);
+        return $this->_scopeConfig->getValue(
+            self::XML_PATH . $configCode,
+            ScopeInterface::SCOPE_STORE,
+            $this->_storeManager->getStore()->getId()
+        );
     }
 }

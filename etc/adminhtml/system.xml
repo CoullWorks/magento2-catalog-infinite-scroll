@@ -21,14 +21,14 @@
             <resource>CoullWorks_CatalogInfiniteScroll::config</resource>
             <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>General Configuration</label>
-                <field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                <field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable Infinite Scroll</label>
                     <comment>Auto-attach infinite scroll to category and search result lists. Widgets placed manually work regardless of this setting.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="load_on_scroll" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Load On Scroll</label>
-                    <comment>Yes: load the next page automatically as the customer nears the bottom. No: only load when the "View More" button is clicked.</comment>
+                    <comment>Yes: load the next page automatically as the customer nears the bottom. No: show a "View More" button at every screen width and load the next page only when it is clicked. On screens narrower than 768px the button is always used.</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="scroll_threshold" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">

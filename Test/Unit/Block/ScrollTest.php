@@ -16,6 +16,9 @@ use CoullWorks\CatalogInfiniteScroll\Block\Scroll;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\View\Element\Template\Context;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Store\Api\Data\StoreInterface;
 use PHPUnit\Framework\TestCase;
 
 class ScrollTest extends TestCase
@@ -36,6 +39,9 @@ class ScrollTest extends TestCase
 
         $context = $this->createMock(Context::class);
         $context->method('getScopeConfig')->willReturn($scopeConfig);
+        $storeManager = $this->createMock(StoreManagerInterface::class);
+        $storeManager->method('getStore')->willReturn($this->createMock(StoreInterface::class));
+        $context->method('getStoreManager')->willReturn($storeManager);
 
         return new Scroll($context, new Json());
     }
@@ -117,5 +123,53 @@ class ScrollTest extends TestCase
 
         self::assertSame('2', $payload['settings']['display_type']);
         self::assertArrayHasKey('.pagebuilder-list', json_decode($block->getInitJson(), true));
+    }
+
+    public function testWidgetParametersOverrideThresholdTrackingUrlAndDebug(): void
+    {
+        $block = $this->block($this->defaults());
+        $block->setData('scroll_threshold', '250');
+        $block->setData('analytics_tracking', '0');
+        $block->setData('update_url', '0');
+        $block->setData('debug', '1');
+
+        $payload = $block->getComponentConfig();
+
+        self::assertSame(250, $payload['config']['scrollThreshold']);
+        self::assertTrue($payload['config']['debug']);
+        self::assertFalse($payload['settings']['analytics']);
+        self::assertFalse($payload['settings']['updateUrl']);
+    }
+
+    public function testBlankWidgetParametersFallBackToStoreConfig(): void
+    {
+        $block = $this->block($this->defaults());
+        $block->setData('scroll_threshold', '');
+        $block->setData('analytics_tracking', '');
+
+        $payload = $block->getComponentConfig();
+
+        self::assertSame(100, $payload['config']['scrollThreshold']);
+        self::assertTrue($payload['settings']['analytics']);
+    }
+
+    public function testConfigIsReadForTheCurrentStoreView(): void
+    {
+        $store = $this->createMock(StoreInterface::class);
+        $store->method('getId')->willReturn(7);
+        $storeManager = $this->createMock(StoreManagerInterface::class);
+        $storeManager->method('getStore')->willReturn($store);
+
+        $scopeConfig = $this->createMock(ScopeConfigInterface::class);
+        $scopeConfig->expects(self::atLeastOnce())
+            ->method('getValue')
+            ->with(self::anything(), ScopeInterface::SCOPE_STORE, 7)
+            ->willReturn('1');
+
+        $context = $this->createMock(Context::class);
+        $context->method('getScopeConfig')->willReturn($scopeConfig);
+        $context->method('getStoreManager')->willReturn($storeManager);
+
+        (new Scroll($context, new Json()))->getComponentConfig();
     }
 }
