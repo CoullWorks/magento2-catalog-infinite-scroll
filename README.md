@@ -58,16 +58,16 @@ Requires Magento Open Source / Adobe Commerce **2.4.7–2.4.9** on **PHP 8.2–8
 ## Configure
 
 **Stores → Configuration → CoullWorks → Catalog Infinite Scroll.** Enable it and the
-module attaches to your category and search result pages automatically. Every option is
-per store view.
+module attaches to your category and search result pages automatically. Every option,
+including Enable, can be set at default, website and store view scope.
 
 | Setting | What it does | Default |
 |---|---|---|
 | **Enable Infinite Scroll** | Auto-attach to category & search lists (widgets work regardless). | Yes |
-| **Load On Scroll** | Auto-load near the bottom vs. only on the "View More" button. | Yes |
+| **Load On Scroll** | Auto-load near the bottom (Yes), or show a "View More" button at every screen width and load only on click (No). Under 768px the button is always used. | Yes |
 | **Scroll Threshold (px)** | Distance from the bottom at which loading starts. | 100 |
 | **Track Virtual Pageviews** | Send a `page_view` to GA4 (`gtag`) or legacy `analytics.js` per page. | Yes |
-| **Update Browser URL** | Reflect the loaded page in the address bar (History API). | Yes |
+| **Update Browser URL** | Reflect the loaded page (`?p=N`) in the address bar, and restore the list on Back (see below). | Yes |
 | **Next Button Selector** | CSS selector for the pagination "next" link. | `.pages-item-next .action.next` |
 | **List Container Selector** | CSS selector(s) for the list wrapper. Comma-separate for several lists. | category & Page Builder grids |
 | **Item Selector** | CSS selector for a single item in the list. | `.item.product.product-item` |
@@ -75,6 +75,16 @@ per store view.
 | **Show End Status** / **End Status Text** | Loading spinner + an end-of-list message. | Yes / "No more products" |
 | **Layout Mode** | Default grid, or Masonry / Isotope / Packery. | Default |
 | **Debug Logging** | Log lifecycle events to the browser console. | No |
+
+## Back and forward
+
+With **Update Browser URL** on, each loaded page replaces the address-bar URL
+(`/category.html?p=3`) rather than adding a history entry, so one press of Back leaves the
+list. If a shopper opens a product and presses Back, the module fetches the earlier pages
+again, puts the items back in order and returns to the saved scroll position; the next
+page it loads is the one after the last, so nothing loads twice. The scroll position and
+page range are kept in `sessionStorage` for the browser tab. Turn the setting off and the
+URL never changes and nothing is restored.
 
 ## Layout modes
 
@@ -92,7 +102,11 @@ Add the **"Infinite Scroll (CoullWorks)"** widget wherever you can insert conten
 - **Layout XML** — a `<widget>` / `<block>` instruction.
 
 Point it at the list's **Container Selector**, **Item Selector** and **Next Button
-Selector**, pick a layout mode, and it runs — no code. Because Magento initialises the
+Selector**, pick a layout mode, and it runs — no code. The widget can also set **Scroll
+Threshold**, **Track Virtual Pageviews**, **Update Browser URL** and **Debug Logging**;
+leave them empty (or "Use store setting") to inherit the store configuration. Do not place
+the widget on a list the category/search auto-attach already covers: turn **Enable
+Infinite Scroll** off for that store view first. Because Magento initialises the
 component per matched element, one page can host several independent infinite lists.
 
 **AJAX layered navigation:** if a filter replaces the product list without a full page
@@ -165,7 +179,7 @@ there's a "next" link to follow.
 |---|---|
 | **Magento** | Open Source / Adobe Commerce 2.4.7, 2.4.8, 2.4.9 |
 | **PHP** | 8.2, 8.3, 8.4, 8.5 |
-| **Themes** | Luma, Hyvä-adjacent and custom themes (jQuery/RequireJS frontends) — set the selectors to match your markup |
+| **Themes** | Luma and custom themes built on jQuery and RequireJS — set the selectors to match your markup. Hyvä is not supported. |
 
 ## Development
 

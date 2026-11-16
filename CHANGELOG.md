@@ -4,6 +4,37 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-11-16
+
+### Fixed
+- **View More now shows when Load On Scroll is No on desktop.** At 768px and wider the
+  button stayed hidden, so with auto-load off a shopper had no way to load more. It now
+  shows at every width whenever Load On Scroll is No, and hides itself once the last page
+  has loaded. The admin field comment now says what actually happens.
+- **Back button no longer needs one press per loaded page.** The module pushed a history
+  entry for every page but stripped the query string, so the address never changed and
+  each entry was a duplicate of the same URL. It now replaces the URL with the real page
+  (`?p=N`, other query parameters kept), adding no history entries.
+
+### Added
+- **Back from a product page restores the list.** The earlier pages are fetched again and
+  put back in order, and the scroll position returns to where it was, with no page loaded
+  twice. State is kept per tab in `sessionStorage` and only when Update Browser URL is on.
+- **Enable Infinite Scroll can be set per website and store view**, matching the README.
+  Every setting is now configurable at default, website and store view scope, and the
+  block reads configuration for the current store view explicitly.
+- **Widget parameters** for Scroll Threshold, Track Virtual Pageviews, Update Browser URL
+  and Debug Logging. Empty (or "Use store setting") inherits the store configuration, so
+  existing widgets behave as before.
+
+### Notes
+- Hyvä is not supported (jQuery and RequireJS only), and the README no longer implies it.
+- Restoring earlier pages assumes the same listing is still there when Back is pressed;
+  if a fetch fails, only the page named in the URL is shown.
+- Verified on Magento 2.4.9 / PHP 8.4 in Chromium at 1280px and 390px: View More, a second
+  store view with Enable off, widget parameters on a category page, and URL, Back and
+  product-page round trips.
+
 ## [2.0.3] - 2026-09-28
 
 ### Changed
