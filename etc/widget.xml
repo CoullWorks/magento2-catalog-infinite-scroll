@@ -39,6 +39,10 @@
                        source_model="Magento\Config\Model\Config\Source\Yesno">
                 <label translate="true">Load On Scroll</label>
             </parameter>
+            <parameter name="scroll_threshold" xsi:type="text" required="false" visible="true" sort_order="55">
+                <label translate="true">Scroll Threshold (px)</label>
+                <description translate="true">Distance from the bottom of the page at which the next page loads. Leave empty to use the store configuration.</description>
+            </parameter>
             <parameter name="hide_navigation" xsi:type="select" required="false" visible="true" sort_order="60"
                        source_model="Magento\Config\Model\Config\Source\Yesno">
                 <label translate="true">Hide Pagination</label>
@@ -55,6 +59,21 @@
             <parameter name="end_status_text" xsi:type="text" required="false" visible="true" sort_order="90">
                 <label translate="true">End Status Text</label>
                 <value>No more items</value>
+            </parameter>
+            <parameter name="analytics_tracking" xsi:type="select" required="false" visible="true" sort_order="100"
+                       source_model="CoullWorks\CatalogInfiniteScroll\Model\Config\Source\YesNoDefault">
+                <label translate="true">Track Virtual Pageviews</label>
+                <description translate="true">Send a virtual pageview to Google Analytics for each appended page.</description>
+            </parameter>
+            <parameter name="update_url" xsi:type="select" required="false" visible="true" sort_order="110"
+                       source_model="CoullWorks\CatalogInfiniteScroll\Model\Config\Source\YesNoDefault">
+                <label translate="true">Update Browser URL</label>
+                <description translate="true">Reflect the loaded page (?p=N) in the address bar.</description>
+            </parameter>
+            <parameter name="debug" xsi:type="select" required="false" visible="true" sort_order="120"
+                       source_model="CoullWorks\CatalogInfiniteScroll\Model\Config\Source\YesNoDefault">
+                <label translate="true">Debug Logging</label>
+                <description translate="true">Log lifecycle events to the browser console.</description>
             </parameter>
         </parameters>
     </widget>
