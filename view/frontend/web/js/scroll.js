@@ -101,10 +101,14 @@ define([
                 InfiniteScroll.imagesLoaded = imagesLoaded;
 
                 self._imagesLoaded = imagesLoaded;
+                self._log('Initialised on', self.config.container || self.element);
                 self._buildStatusBlock();
                 self._initLayout(function () {
-                    self._initScroll();
-                    self._trackPageViews();
+                    self._restoreHistory(function () {
+                        self._initScroll();
+                        self._trackPageViews();
+                        self._trackScroll();
+                    });
                 });
             });
         },
@@ -195,24 +199,30 @@ define([
         },
 
         /**
-         * On narrow viewports, swap auto-load for a "View More" button.
+         * Wire the "View More" button. It is shown on narrow viewports (where
+         * auto-load is always off) and, at any width, whenever Load On Scroll is
+         * set to No, so there is always a way to load the next page.
          */
         _initViewMore: function () {
             var self = this,
                 $button = self.$status ? self.$status.find('.view-more-button') : $(),
                 query = window.matchMedia('(min-width: 768px)');
 
+            $button.off('click.cwInfiniteScroll').on('click.cwInfiniteScroll', function () {
+                self.$element.infiniteScroll('loadNextPage');
+            });
+
+            // Nothing left to load, so the button has no job any more.
+            self.$element.on('last.infiniteScroll', function () {
+                self._lastPageReached = true;
+                $button.hide();
+            });
+
             function apply(mql) {
-                if (mql.matches) {
-                    $button.hide();
-                    self.$element.infiniteScroll('option', { loadOnScroll: self.config.loadOnScroll });
-                } else {
-                    $button.show();
-                    self.$element.infiniteScroll('option', { loadOnScroll: false });
-                    $button.off('click.cwInfiniteScroll').on('click.cwInfiniteScroll', function () {
-                        self.$element.infiniteScroll('loadNextPage');
-                    });
-                }
+                var auto = mql.matches && self.config.loadOnScroll;
+
+                self.$element.infiniteScroll('option', { loadOnScroll: !!auto });
+                $button.toggle(!auto && !self._lastPageReached);
             }
 
             apply(query);
@@ -227,6 +237,11 @@ define([
         /**
          * Reflect the loaded page in the address bar when enabled.
          *
+         * The URL is replaced rather than pushed: every loaded page used to add
+         * a history entry, so the Back button had to be pressed once per loaded
+         * page before it left the list. The query string is kept, so the URL
+         * is a real, shareable link to the page just loaded (e.g. ?p=3).
+         *
          * @param {String} path
          */
         _maybeUpdateUrl: function (path) {
@@ -234,10 +249,200 @@ define([
                 return;
             }
 
-            var clean = path.indexOf('?') > -1 ? path.substring(0, path.indexOf('?')) : path;
+            var link = document.createElement('a'),
+                page = parseInt(urlParam('p', path), 10);
 
-            window.history.pushState(null, document.title, clean);
-            this._log('URL updated to', clean);
+            link.href = path;
+            window.history.replaceState(window.history.state, document.title, link.pathname + link.search);
+            this._rememberPage(page);
+            this._log('URL updated to', link.pathname + link.search);
+        },
+
+        /**
+         * Storage key for this list: the page URL without the page number,
+         * so every page of the same listing shares one record.
+         *
+         * @return {String}
+         */
+        _storeKey: function () {
+            var query = window.location.search.replace(/([?&])p=[^&#]*&?/, '$1').replace(/[?&]$/, '');
+
+            return 'cwis:' + window.location.pathname + query + '|' + (this.config.container || '');
+        },
+
+        /**
+         * Current listing page number from the address bar.
+         *
+         * @return {Number}
+         */
+        _currentPage: function () {
+            return parseInt(urlParam('p', window.location.search), 10) || 1;
+        },
+
+        /**
+         * Persist which pages this visit has loaded and where the shopper is
+         * scrolled, so Back from a product page can put the list back as it was.
+         *
+         * @param {Number} [page]
+         */
+        _rememberPage: function (page) {
+            var state = this._state || { first: this._currentPage(), last: this._currentPage(), scrollY: 0 };
+
+            if (page) {
+                state.last = Math.max(state.last, page);
+            }
+
+            state.scrollY = Math.round(window.pageYOffset || 0);
+            this._state = state;
+
+            try {
+                window.sessionStorage.setItem(this._storeKey(), JSON.stringify(state));
+            } catch (e) {
+                this._log('sessionStorage unavailable:', e && e.message);
+            }
+        },
+
+        /**
+         * Remember the scroll position while the shopper browses the list.
+         */
+        _trackScroll: function () {
+            var self = this,
+                timer = null;
+
+            if (!self.settings.updateUrl) {
+                return;
+            }
+
+            $(window).off('.cwInfiniteScroll').on('scroll.cwInfiniteScroll', function () {
+                if (timer) {
+                    return;
+                }
+
+                timer = window.setTimeout(function () {
+                    timer = null;
+                    self._rememberPage();
+                }, 200);
+            });
+            $(window).on('pagehide.cwInfiniteScroll', function () {
+                self._rememberPage();
+            });
+        },
+
+        /**
+         * True when the browser is showing this page through Back/Forward.
+         *
+         * @return {Boolean}
+         */
+        _isHistoryNavigation: function () {
+            var entries = window.performance && window.performance.getEntriesByType ?
+                window.performance.getEntriesByType('navigation') : [];
+
+            return !!entries.length && entries[0].type === 'back_forward';
+        },
+
+        /**
+         * Back/Forward to a list whose URL names the last page loaded (?p=N):
+         * the browser reloads only page N, so fetch the earlier pages, put them
+         * back in front and return to the saved scroll position. The next page
+         * the library loads is still N+1, so nothing is loaded twice.
+         *
+         * @param {Function} done
+         */
+        _restoreHistory: function (done) {
+            var self = this,
+                saved = null,
+                current = self._currentPage(),
+                pages = [],
+                i;
+
+            if (!self.settings.updateUrl || !self._isHistoryNavigation()) {
+                self._state = { first: current, last: current, scrollY: 0 };
+                done();
+
+                return;
+            }
+
+            try {
+                saved = JSON.parse(window.sessionStorage.getItem(self._storeKey()) || 'null');
+            } catch (e) {
+                saved = null;
+            }
+
+            if (!saved || saved.last !== current || saved.first >= current) {
+                self._state = saved && saved.last === current ? saved : { first: current, last: current, scrollY: 0 };
+                done();
+
+                return;
+            }
+
+            self._state = saved;
+
+            for (i = saved.first; i < current; i++) {
+                pages.push(i);
+            }
+
+            if ('scrollRestoration' in window.history) {
+                window.history.scrollRestoration = 'manual';
+            }
+
+            $.when.apply($, $.map(pages, function (page) {
+                return $.ajax({ url: self._pageUrl(page), dataType: 'html' }).then(function (html) {
+                    return { page: page, html: html };
+                });
+            })).done(function () {
+                var results = pages.length === 1 ? [arguments[0]] : [].slice.call(arguments),
+                    $first = self.$element.find(self.config.append).first(),
+                    index = $(self.config.container || self.element).index(self.element);
+
+                results.sort(function (a, b) {
+                    return a.page - b.page;
+                });
+
+                $.each(results, function (n, result) {
+                    var doc = new window.DOMParser().parseFromString(result.html, 'text/html'),
+                        lists = doc.querySelectorAll(self.config.container || ''),
+                        list = lists[index > -1 ? index : 0],
+                        $items = list ? $(list).find(self.config.append) : $();
+
+                    $items.each(function () {
+                        $(document.importNode(this, true)).insertBefore($first);
+                    });
+                });
+
+                if (self.outlayer) {
+                    self.outlayer.reloadItems();
+                    self.outlayer.layout();
+                }
+
+                $('body').trigger('contentUpdated');
+                window.setTimeout(function () {
+                    window.scrollTo(0, saved.scrollY || 0);
+
+                    if ('scrollRestoration' in window.history) {
+                        window.history.scrollRestoration = 'auto';
+                    }
+                }, 0);
+                self._log('Restored pages', saved.first, 'to', current - 1, 'after history navigation');
+            }).fail(function () {
+                self._log('Could not restore earlier pages; showing the current page only');
+
+                if ('scrollRestoration' in window.history) {
+                    window.history.scrollRestoration = 'auto';
+                }
+            }).always(done);
+        },
+
+        /**
+         * URL of listing page n, keeping the other query parameters.
+         *
+         * @param {Number} n
+         * @return {String}
+         */
+        _pageUrl: function (n) {
+            var query = window.location.search.replace(/([?&])p=[^&#]*&?/, '$1').replace(/[?&]$/, ''),
+                glue = query.indexOf('?') > -1 ? '&' : '?';
+
+            return window.location.pathname + (n > 1 ? query + glue + 'p=' + n : query);
         },
 
         /**
