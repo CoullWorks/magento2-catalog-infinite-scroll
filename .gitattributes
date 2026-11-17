@@ -1,0 +1,11 @@
+# Customer zips are built with `git archive`: leave out everything that is not needed to run the module.
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/.github export-ignore
+/.worktrees export-ignore
+/assets export-ignore
+/docs export-ignore
+/Test export-ignore
+/phpcs.xml export-ignore
+/phpstan.neon export-ignore
+/phpunit.xml export-ignore

@@ -193,6 +193,10 @@ there's a "next" link to follow.
 | **PHP** | 8.2, 8.3, 8.4, 8.5 |
 | **Themes** | Luma and custom themes built on jQuery and RequireJS — set the selectors to match your markup. Hyvä is not supported. |
 
+## Documentation
+
+Guides and reference for Catalog Infinite Scroll are in [docs/README.md](docs/README.md). The same pages are online at <https://www.coullworks.com/docs/magento/infinite-scroll>.
+
 ## Development
 
 ```sh
